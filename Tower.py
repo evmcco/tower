@@ -23,6 +23,7 @@ class Block(pygame.sprite.Sprite):
         for i in range(2):
             if key[moveset[i]]:
                 self.dx = [-32, 32][i]
+                self.dy = 0
                 self.new_x = self.rect.x + self.dx
                 if self.new_x >= 0 and self.new_x <= 224:
                     self.rect.x = self.new_x
@@ -32,6 +33,7 @@ class Block(pygame.sprite.Sprite):
         for i in range(2):
             if key[moveset[2:4][i]]:
                 self.dy = [-32, 32][i]
+                self.dx = 0
                 self.new_y = self.rect.y + self.dy
                 if self.new_y >= 0 and self.new_y <= 224:
                     self.rect.y = self.new_y
@@ -39,10 +41,17 @@ class Block(pygame.sprite.Sprite):
                     return True
 
     def attack(self, target):
-        target.health -= self.damage
-        print("%s did %d damage to %s, it has %d health now" % (self.name, self.damage, target.name, target.health))
-        if target.health <= 0:
-            print("%s has died" % target.name)
+        if self.can_attack == True:
+            target.health -= self.damage
+            print("%s did %d damage to %s, %s has %d health now" % (self.name, self.damage, target.name, target.name, target.health))
+            if isinstance(target, Monster):
+                target.can_attack = False
+                print("Dazed!")
+            if target.health <= 0:
+                print("%s has died" % target.name)
+        else:
+            print("%s is dazed and can't attack" % self.name)
+        
 
 
 class Hero(Block):
@@ -50,6 +59,7 @@ class Hero(Block):
         super() .__init__(pos)
         self.name = "The Hero"
         self.health = 3
+        self.can_attack = True
 
 class Monster(Block):
     def __init__(self, pos):
@@ -125,12 +135,13 @@ def main():
                 #if a collision will happen, 'unmove' and attack instead
                 player.rect.x -= player.dx
                 player.rect.y -= player.dy
-                player.dx = 0
-                player.dy = 0
+                # player.dx = 0
+                # player.dy = 0
                 player.attack(enemy)
                 enemy.next_to_hero = True
             else:
                 enemy.next_to_hero = False
+                enemy.can_attack = True
             #find player position and move monster toward it
             player_pos = [player.rect.x, player.rect.y]
             if enemy.next_to_hero == True:
